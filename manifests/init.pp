@@ -13,7 +13,9 @@
 #
 # [*ensure*]
 #   The state at which to maintain the user account.
-#   Can be one of "present" or "absent".
+#   Can be one of "present", "absent", or "purge".
+#   Absent will remove the user but leave the home directory
+#   Purge  will remove the user and purge the home directory
 #   Defaults to present.
 #
 # [*username*]
@@ -152,16 +154,22 @@ define account(
       $dir_ensure = directory
       $dir_owner  = $username
       $dir_group  = $primary_group
+      $dir_force  = false
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
-      $dir_ensure = absent
+      $dir_ensure = directory
       $dir_owner  = undef
       $dir_group  = undef
+      $dir_force  = false
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
+    purge: {
+      $dir_ensure = absent
+      $dir_force  = false
+    }
     default: {
-      err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent." )
+      err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
     }
   }
 
@@ -183,18 +191,20 @@ define account(
 
   file {
     "${title}_home":
-      ensure  => $dir_ensure,
-      path    => $home_dir_real,
-      owner   => $dir_owner,
-      group   => $dir_group,
-      mode    => $home_dir_perms;
+      ensure => $dir_ensure,
+      path   => $home_dir_real,
+      owner  => $dir_owner,
+      group  => $dir_group,
+      mode   => $home_dir_perms,
+      force  => $dir_force;
 
     "${title}_sshdir":
-      ensure  => $dir_ensure,
-      path    => "${home_dir_real}/.ssh",
-      owner   => $dir_owner,
-      group   => $dir_group,
-      mode    => '0700';
+      ensure => $dir_ensure,
+      path   => "${home_dir_real}/.ssh",
+      owner  => $dir_owner,
+      group  => $dir_group,
+      mode   => '0700',
+      force  => $dir_force;
   }
 
   if $ssh_key != undef {
