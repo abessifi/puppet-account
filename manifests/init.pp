@@ -159,7 +159,7 @@ define account(
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
-      $dir_ensure = directory
+#      $dir_ensure = directory
       $dir_owner  = undef
       $dir_group  = undef
       $dir_force  = false
