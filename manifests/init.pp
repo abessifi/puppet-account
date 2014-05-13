@@ -150,6 +150,7 @@ define account(
       $file_ensure = absent
       $group_ensure = absent
       $user_ensure = absent
+      File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     default: {
       err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
@@ -167,7 +168,7 @@ define account(
         gid    => $uid,
     }
 
-    case $ensure {
+    case $group_ensure {
       present: {
         Group[$title] -> User[$title]
       }
