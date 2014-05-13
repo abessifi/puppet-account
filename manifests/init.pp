@@ -130,8 +130,9 @@ define account(
       $dir_group  = $primary_group
       $dir_force  = false
       $file_ensure = $ensure
-      User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
       $group_ensure = $ensure
+      $user_ensure = $ensure
+      User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
 #      $dir_ensure = directory
@@ -139,14 +140,16 @@ define account(
       $dir_group  = undef
       $dir_force  = false
       $file_ensure = $ensure
-      File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
       $group_ensure = $ensure
+      $user_ensure = $ensure
+      File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     purge: {
       $dir_ensure = absent
       $dir_force  = false
       $file_ensure = absent
       $group_ensure = absent
+      $user_ensure = absent
     }
     default: {
       err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
@@ -181,7 +184,7 @@ define account(
 
   user {
     $title:
-      ensure     => $ensure,
+      ensure     => $user_ensure,
       name       => $username,
       comment    => $comment,
       uid        => $uid,
