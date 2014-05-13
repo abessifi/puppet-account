@@ -146,7 +146,7 @@ define account(
     }
     purge: {
       $dir_ensure = absent
-      $dir_force  = false
+      $dir_force  = true
       $file_ensure = absent
       $group_ensure = absent
       $user_ensure = absent
