@@ -123,12 +123,42 @@ define account(
       $home_dir_real = $home_dir
   }
 
+  case $ensure {
+    present: {
+      $dir_ensure = directory
+      $dir_owner  = $username
+      $dir_group  = $primary_group
+      $dir_force  = false
+      $file_ensure = $ensure
+      User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
+      $group_ensure = $ensure
+    }
+    absent: {
+#      $dir_ensure = directory
+      $dir_owner  = undef
+      $dir_group  = undef
+      $dir_force  = false
+      $file_ensure = $ensure
+      File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
+      $group_ensure = $ensure
+    }
+    purge: {
+      $dir_ensure = absent
+      $dir_force  = false
+      $file_ensure = absent
+      $group_ensure = absent
+    }
+    default: {
+      err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
+    }
+  }
+
   if $create_group == true {
     $primary_group = $username
 
     group {
       $title:
-        ensure => $ensure,
+        ensure => $group_ensure,
         name   => $username,
         system => $system,
         gid    => $uid,
@@ -148,33 +178,6 @@ define account(
     $primary_group = $gid
   }
 
-
-  case $ensure {
-    present: {
-      $dir_ensure = directory
-      $dir_owner  = $username
-      $dir_group  = $primary_group
-      $dir_force  = false
-      $file_ensure = $ensure
-      User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
-    }
-    absent: {
-#      $dir_ensure = directory
-      $dir_owner  = undef
-      $dir_group  = undef
-      $dir_force  = false
-      $file_ensure = $ensure
-      File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
-    }
-    purge: {
-      $dir_ensure = absent
-      $dir_force  = false
-      $file_ensure = absent
-    }
-    default: {
-      err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
-    }
-  }
 
   user {
     $title:
