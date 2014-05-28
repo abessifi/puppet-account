@@ -13,9 +13,10 @@
 #
 # [*ensure*]
 #   The state at which to maintain the user account.
-#   Can be one of "present", "absent", or "purge".
+#   Can be one of "present", "deactivate", "absent", or "purge".
 #   Absent will remove the user but leave the home directory
 #   Purge  will remove the user and purge the home directory
+#   Deactivate will set shell to "false" to disable user to connect and leave the home directory.
 #   Defaults to present.
 #
 # [*username*]
@@ -144,6 +145,18 @@ define account(
       $file_ensure = $ensure
       $group_ensure = $ensure
       $user_ensure = $ensure
+      $shell_ensure = $shell
+      User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
+    }
+    deactivate: {
+      $dir_ensure = directory
+      $dir_owner  = $username
+      $dir_group  = $primary_group
+      $dir_force  = false
+      $file_ensure = present
+      $group_ensure = present
+      $user_ensure = present
+      $shell_ensure = '/bin/false'
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
@@ -165,7 +178,7 @@ define account(
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     default: {
-      err( "Invalid value given for ensure: ${ensure}. Must be one of present,absent,purge." )
+      err( "Invalid value given for ensure: ${ensure}. Must be one of present|deactivate|absent|purge." )
     }
   }
 
@@ -202,7 +215,7 @@ define account(
       comment    => $comment,
       uid        => $uid,
       password   => $password,
-      shell      => $shell,
+      shell      => $shell_ensure,
       gid        => $primary_group,
       groups     => $groups,
       home       => $home_dir_real,
