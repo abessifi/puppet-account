@@ -109,7 +109,7 @@ define account(
   $password = '!',
   $shell = '/bin/bash',
   $home_dir = undef,
-  $home_dir_perms = '0750',
+  $home_dir_perms = '0755',
   $create_group = true,
   $system = false,
   $uid = undef,
@@ -151,6 +151,7 @@ define account(
       $group_ensure = $ensure
       $user_ensure = $ensure
       $shell_ensure = $shell
+      $ssh_key_owner = $username
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     deactivate: {
@@ -162,16 +163,18 @@ define account(
       $group_ensure = present
       $user_ensure = present
       $shell_ensure = '/bin/false'
+      $ssh_key_owner = $username
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
       $dir_ensure = directory
-      $dir_owner  = undef
-      $dir_group  = undef
+      $dir_owner  = 'root'
+      $dir_group  = 'root'
       $dir_force  = false
       $file_ensure = $ensure
       $group_ensure = $ensure
       $user_ensure = $ensure
+      $ssh_key_owner = 'root'
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     purge: {
@@ -180,6 +183,7 @@ define account(
       $file_ensure = absent
       $group_ensure = absent
       $user_ensure = absent
+      $ssh_key_owner = $username
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     default: {
@@ -255,7 +259,7 @@ define account(
         ensure  => $file_ensure,
         type    => $ssh_key_type,
         name    => "${title} SSH Key",
-        user    => $username,
+        user    => $ssh_key_owner,
         key     => $ssh_key,
     }
   }
@@ -263,7 +267,7 @@ define account(
   if $ssh_keys != undef {
     $ssh_key_settings = {
       ensure => $file_ensure,
-      user   => $username,
+      user   => $ssh_key_owner,
     }
     create_resources('ssh_authorized_key', $ssh_keys, $ssh_key_settings)
   }
