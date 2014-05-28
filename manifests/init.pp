@@ -72,6 +72,10 @@
 #   the ssh_authorized_key's 'type' parameter.
 #   Defaults to 'ssh-rsa'.
 #
+# [*ssh_keys*]
+#   A hash of SSH key data in the following form:
+#     { key1 => { type => 'ssh-rsa', key => 'AAAZZZ...' } }
+#
 # [*comment*]
 #   Sets comment metadata for the user
 #
@@ -115,7 +119,8 @@ define account(
   $ensure = present,
   $comment= "${title} Puppet-managed User",
   $gid = 'users',
-  $allowdupe = false
+  $allowdupe = false,
+  $ssh_keys = undef,
 ) {
 
   if $home_dir == undef {
@@ -243,7 +248,8 @@ define account(
   }
 
   if $ssh_key != undef {
-    File["${title}_sshdir"]->
+    warning('The "ssh_key" setting of the "account" type has been deprecated in favor of "ssh_keys"! Check the docs and upgrade ASAP.')
+
     ssh_authorized_key {
       $title:
         ensure  => $file_ensure,
@@ -253,5 +259,14 @@ define account(
         key     => $ssh_key,
     }
   }
+
+  if $ssh_keys != undef {
+    $ssh_key_settings = {
+      ensure => $file_ensure,
+      user   => $username,
+    }
+    create_resources('ssh_authorized_key', $ssh_keys, $ssh_key_settings)
+  }
+
 }
 
