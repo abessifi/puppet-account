@@ -88,6 +88,10 @@
 #   Whether to allow duplicate UIDs.
 #   Defaults to false.
 #   Valid values are true, false, yes, no.
+# [*sudo*]
+#   Set sudo privilege to user.
+#   Default to false.
+#   Valid values are true, false.
 #
 # === Examples
 #
@@ -121,6 +125,7 @@ define account(
   $gid = 'users',
   $allowdupe = false,
   $ssh_keys = undef,
+  $sudo = false,
 ) {
 
   if $home_dir == undef {
@@ -152,6 +157,7 @@ define account(
       $user_ensure = $ensure
       $shell_ensure = $shell
       $ssh_key_owner = $username
+      $sudo_real = true
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     deactivate: {
@@ -164,6 +170,7 @@ define account(
       $user_ensure = present
       $shell_ensure = '/bin/false'
       $ssh_key_owner = $username
+      $sudo_real = false
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
@@ -175,6 +182,7 @@ define account(
       $group_ensure = $ensure
       $user_ensure = $ensure
       $ssh_key_owner = 'root'
+      $sudo_real = false
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     purge: {
@@ -184,6 +192,7 @@ define account(
       $group_ensure = absent
       $user_ensure = absent
       $ssh_key_owner = $username
+      $sudo_real = false
       File["${title}_sshdir"] -> File["${title}_home"] -> User[$title]
     }
     default: {
@@ -267,9 +276,23 @@ define account(
   if $ssh_keys != undef {
     $ssh_key_settings = {
       ensure => $file_ensure,
-      user   => $ssh_key_owner,
+      user   => $username,
     }
     create_resources('ssh_authorized_key', $ssh_keys, $ssh_key_settings)
+  }
+
+  validate_bool($sudo)
+
+  if ($sudo and $sudo_real) {
+    sudo::conf { $username:
+        ensure => present,
+        content => "${username} ALL=(ALL) NOPASSWD: ALL",
+    }
+  }
+  else {
+    sudo::conf { $username:
+        ensure => absent,
+    }
   }
 
 }
