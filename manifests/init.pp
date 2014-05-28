@@ -39,7 +39,9 @@
 #   Whether the underlying user resource should manage the home directory.
 #   This setting only determines whether or not puppet will copy /etc/skel.
 #   Regardless of its value, at minimum, a home directory and a $HOME/.ssh
-#   directory will be created. Defaults to true.
+#   directory will be created. 
+#   This will create the home directory when ensure => present, and delete
+#   the home directory when ensure => absent. Defaults to true.
 #
 # [*home_dir*]
 #   The location of the user's home directory.
@@ -98,11 +100,21 @@
 # Copyright 2013 Tray Torrance, unless otherwise noted
 #
 define account(
-  $username = $title, $password = '!', $shell = '/bin/bash',
-  $manage_home = true, $home_dir = undef,  $home_dir_perms = '0750',
-  $create_group = true, $system = false, $uid = undef, $ssh_key = undef,
-  $ssh_key_type = 'ssh-rsa', $groups = [], $ensure = present,
-  $comment= "${title} Puppet-managed User", $gid = 'users', $allowdupe = false
+  $username = $title,
+  $password = '!',
+  $shell = '/bin/bash',
+  $home_dir = undef,
+  $home_dir_perms = '0750',
+  $create_group = true,
+  $system = false,
+  $uid = undef,
+  $ssh_key = undef,
+  $ssh_key_type = 'ssh-rsa',
+  $groups = [],
+  $ensure = present,
+  $comment= "${title} Puppet-managed User",
+  $gid = 'users',
+  $allowdupe = false
 ) {
 
   if $home_dir == undef {
@@ -135,7 +147,7 @@ define account(
       User[$title] -> File["${title}_home"] -> File["${title}_sshdir"]
     }
     absent: {
-#      $dir_ensure = directory
+      $dir_ensure = directory
       $dir_owner  = undef
       $dir_group  = undef
       $dir_force  = false
@@ -194,7 +206,7 @@ define account(
       gid        => $primary_group,
       groups     => $groups,
       home       => $home_dir_real,
-      managehome => $manage_home,
+      managehome => false,
       system     => $system,
       allowdupe  => $allowdupe,
   }
