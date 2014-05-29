@@ -150,7 +150,7 @@ define account(
     present: {
       $dir_ensure = directory
       $dir_owner  = $username
-      $dir_group  = $primary_group
+      $dir_group  = $username
       $dir_force  = false
       $file_ensure = $ensure
       $group_ensure = $ensure
@@ -163,7 +163,7 @@ define account(
     deactivate: {
       $dir_ensure = directory
       $dir_owner  = $username
-      $dir_group  = $primary_group
+      $dir_group  = $username
       $dir_force  = false
       $file_ensure = present
       $group_ensure = present
@@ -262,7 +262,7 @@ define account(
 
   if $ssh_key != undef {
     warning('The "ssh_key" setting of the "account" type has been deprecated in favor of "ssh_keys"! Check the docs and upgrade ASAP.')
-
+    File["${title}_sshdir"]->
     ssh_authorized_key {
       $title:
         ensure  => $file_ensure,
@@ -276,7 +276,7 @@ define account(
   if $ssh_keys != undef {
     $ssh_key_settings = {
       ensure => $file_ensure,
-      user   => $username,
+      user   => $ssh_key_owner,
     }
     create_resources('ssh_authorized_key', $ssh_keys, $ssh_key_settings)
   }
