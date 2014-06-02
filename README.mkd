@@ -4,17 +4,17 @@ A puppet module designed to ease the management of user accounts.
 
 Currently supports:
 
-  * Creation/Removal of accounts (via the "ensure" parameter)
+  * Create/Deactivate/Purge user accounts (via the "ensure" parameter)
   * Account creation w/UID control
   * Setting the login shell
   * Dedicated Group creation w/GID control (optional)
   * Home directory creation ( and optionally management via /etc/skel )
   * Support for system users
-  * SSH key management (optional)
+  * Multiple SSH key management
+  * Manage sudo (shorthand, instead for managing that seperately within another configuration)
 
 Notes/Drawbacks:
 
-  * Does not currently support multiple ssh keys per account. (coming soon-ish)
   * Does not automatically create arbitrary extra groups. Use the native group type for this.
 
 ## Build Status
@@ -28,6 +28,10 @@ For full documentation of all parameters, see the inline puppet docs:
 
     $ puppet doc /etc/puppet/modules/account/manifests/init.pp
 
+## Requirements
+
+[saz/sudo] (http://puppetlabs.com/blog/module-of-the-week-sazsudo-manage-sudo-configuration) module have to be installed in order to use/set correctly "sudo" privilege to user within an account configuration.
+
 ## Usage
 
 ### account
@@ -38,6 +42,7 @@ Standard usage of this defined type would probably look something like this:
       'sysadmin':
         home_dir => '/opt/sysadmin',
         groups   => [ 'sudo', 'users' ],
+        sudo => true,
         ssh_key  => 'AAAAB3NzaC1yc2EAAAABIwAAAQEArfQmMkvtWRnwas3DIti9qAuSFQXKcE0kdp5f42PP8l2kTytJPPWp5T/q8PXDQ2d2X5KplMCMDiUQkchqhmDp840jsqBQ9iZPejAjv3w2kITgScFNymAcErtzX52iw4lnUyjZzomCW8G3YthQMaRm2NkI4wcVcjzq+SKyTfzrBoH21RgZlfcx+/50AFRrarpYqel9W5DuLmmShHxD8clPS532Z/1X+1jCW2KikUhdo98lxYTIgFno05lwFOS9Ry89UyBarn1Ecp1zXpIBE7dMQif3UyLUTU9zCVIoZiJj4iO5lemSSV0v8GL97qclBUVJpaCpc4ebR7bhi0nQ28RcxQ==',
         comment   => 'SysAdmin user',
     }
@@ -79,5 +84,5 @@ Feel free to fork and submit pull requests (or use git's own functionality to ma
   - <del>Unit Tests</del>
   - <del>Submit module to PuppetForge</del>
   - <del>Support for removing accounts</del>
-  - Support for multiple SSH keys
-
+  - <del>Support for multiple SSH keys</del>
+  - <del>Support for sudo</del>
