@@ -81,7 +81,7 @@ Feel free to fork and submit pull requests (or use git's own functionality to ma
 
 ## ToDo
 
-  - <del>Unit Tests</del>
+  - Unit Tests
   - <del>Submit module to PuppetForge</del>
   - <del>Support for removing accounts</del>
   - <del>Support for multiple SSH keys</del>
