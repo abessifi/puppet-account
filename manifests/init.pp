@@ -92,6 +92,8 @@
 #   Set sudo privilege to user.
 #   Default to false.
 #   Valid values are true, false.
+#   saz/sudo module have to be installed.
+#   http://puppetlabs.com/blog/module-of-the-week-sazsudo-manage-sudo-configuration 
 #
 # === Examples
 #
@@ -281,6 +283,7 @@ define account(
     create_resources('ssh_authorized_key', $ssh_keys, $ssh_key_settings)
   }
 
+  
   validate_bool($sudo)
 
   if ($sudo and $sudo_real) {
